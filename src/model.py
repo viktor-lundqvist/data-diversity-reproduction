@@ -31,6 +31,17 @@ class GPT2(pl.LightningModule):
         self._backbone = GPT2Model(configuration)
         self._read_out = nn.Linear(n_embd, n_dims_out)
 
+    def forward(self, batch):
+        ys = batch["ys"]
+        seq = batch["seq"]
+
+        embeds = self._read_in(seq)
+        output = self._backbone(inputs_embeds=embeds).last_hidden_state
+        prediction = self._read_out(output)
+        yhats = u.seq_to_targets(prediction)
+
+        return yhats
+
     def training_step(self, batch, batch_idx):
         ys = batch["ys"]
         seq = batch["seq"]

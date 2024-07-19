@@ -50,3 +50,7 @@ class BatchIterator(torch.utils.data.IterableDataset):
 
 if __name__ == "__main__":
     pass
+
+def oracle(batch):
+    targets = torch.matmul(batch["xs"], batch["ws"][:,:,np.newaxis])
+    return torch.squeeze(targets, axis=2)
