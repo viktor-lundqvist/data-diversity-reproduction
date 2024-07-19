@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-import pickle as pkl
 
 from config import Config
 import utils as u
@@ -34,10 +33,14 @@ class LinRegData:
 
 class BatchIterator(torch.utils.data.IterableDataset):
     def __init__(self, config):
+        self.len = config.train_steps
         self.generator = LinRegData(config).batch_generator(config.train_steps)
 
     def __iter__(self):
         return self.generator
+    
+    def __len__(self):
+        return self.len
 
 if __name__ == "__main__":
     pass
