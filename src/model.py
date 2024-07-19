@@ -10,7 +10,7 @@ from collect_data import LinRegData
 config = Config()
 
 class GPT2(pl.LightningModule):
-    def __init__(self, n_dims_in, n_positions, n_embd=256, n_layer=12, n_head=8, n_dims_out=1):
+    def __init__(self, n_dims_in, n_positions, n_embd=128, n_layer=8, n_head=2, n_dims_out=1):
         super(GPT2, self).__init__()
         configuration = GPT2Config(
             n_positions=2048,  # set to sthg large advised

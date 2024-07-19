@@ -1,6 +1,6 @@
 
 class Config:
-    n_tasks = 2 # 2^1 to 2^17
+    n_tasks = 8 # 2^1 to 2^17
 
     train_steps = 100
     batch_size = 256
@@ -8,5 +8,5 @@ class Config:
     weight_decay = 1e-2
 
     n_points = 16
-    dim = 10
-    noise_scale = 0.0
+    dim = 8
+    noise_scale = 0.5
