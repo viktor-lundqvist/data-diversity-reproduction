@@ -5,10 +5,13 @@ from config import Config
 import utils as u
 
 class LinRegData:
-    def __init__(self, config):
+    def __init__(self, config, task_pool=None):
         self.config = config
         self.train_data = []
-        self.generate_task_pool()
+        if task_pool is not None:
+            self.task_pool = task_pool
+        else:
+            self.generate_task_pool()
 
     def generate_task_pool(self):
         self.task_pool = np.random.normal(size=(self.config.n_tasks, self.config.dim))
@@ -34,7 +37,9 @@ class LinRegData:
 class BatchIterator(torch.utils.data.IterableDataset):
     def __init__(self, config):
         self.len = config.train_steps
-        self.generator = LinRegData(config).batch_generator(config.train_steps)
+        self.linregdata = LinRegData(config)
+        self.generator = self.linregdata.batch_generator(config.train_steps)
+        self.task_pool = self.linregdata.task_pool
 
     def __iter__(self):
         return self.generator

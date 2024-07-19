@@ -15,7 +15,10 @@ if __name__ == "__main__":
 
     train_loader = BatchIterator(config)
     checkpoint_callback = ModelCheckpoint(every_n_train_steps=config.checkpoint_interval, save_top_k=-1)
-    wandb_logger = WandbLogger(log_model="all", project="Data Diversity Reproduction")
+    wandb_logger = WandbLogger(
+        log_model="all",
+        project="Data Diversity Reproduction"
+    )
 
     trainer = pl.Trainer(
         max_epochs=1,
@@ -34,4 +37,8 @@ if __name__ == "__main__":
         # Track hyperparameters and run metadata
         config=config_dict,
     )
+
+    task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
+    torch.save(train_loader.task_pool, task_pool_path)
+
     trainer.fit(model=model, train_dataloaders=train_loader)
