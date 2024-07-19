@@ -3,3 +3,6 @@
 lightning_logs/
 wandb/
 Data\ Diversity\ Reproduction/
+**.ipynb_checkpoints/
+**.DS_Store
+**.vscode/
