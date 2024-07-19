@@ -34,18 +34,19 @@ class LinRegData:
         for _ in range(n_batches):
             yield self.generate_batch()
 
+    def batch_iterator(self):
+        return BatchIterator(generator=self.batch_generator(self.config.train_steps), length=self.config.train_steps)
+
 class BatchIterator(torch.utils.data.IterableDataset):
-    def __init__(self, config):
-        self.len = config.train_steps
-        self.linregdata = LinRegData(config)
-        self.generator = self.linregdata.batch_generator(config.train_steps)
-        self.task_pool = self.linregdata.task_pool
+    def __init__(self, generator, length=None):
+        self.length = length
+        self.generator = generator
 
     def __iter__(self):
         return self.generator
     
     def __len__(self):
-        return self.len
+        return self.length
 
 if __name__ == "__main__":
     pass

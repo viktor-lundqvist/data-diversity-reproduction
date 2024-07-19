@@ -6,14 +6,15 @@ from pytorch_lightning.loggers import WandbLogger
 import wandb
 
 from model import GPT2
-from collect_data import BatchIterator
+from collect_data import LinRegData
 from config import Config
 
 if __name__ == "__main__":
     wandb.login()
     config = Config()
 
-    train_loader = BatchIterator(config)
+    train_data = LinRegData(config)
+    train_loader = train_data.batch_iterator()
     checkpoint_callback = ModelCheckpoint(every_n_train_steps=config.checkpoint_interval, save_top_k=-1)
     wandb_logger = WandbLogger(
         log_model="all",
@@ -39,6 +40,6 @@ if __name__ == "__main__":
     )
 
     task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
-    torch.save(train_loader.task_pool, task_pool_path)
+    torch.save(train_data.task_pool, task_pool_path)
 
     trainer.fit(model=model, train_dataloaders=train_loader)
