@@ -1,5 +1,4 @@
 **/__pycache__/
-**.ipynb
 lightning_logs/
 wandb/
 Data\ Diversity\ Reproduction/

@@ -17,7 +17,7 @@ class LinRegData:
         self.task_pool = np.random.normal(size=(self.config.n_tasks, self.config.dim))
 
     def generate_batch(self):
-        batch_task_idx = np.random.randint(self.config.n_tasks, size=(self.config.batch_size))
+        batch_task_idx = np.random.randint(self.task_pool.shape[0], size=(self.config.batch_size))
         batch_tasks = self.task_pool[batch_task_idx,:]
         data = np.random.normal(size=(self.config.batch_size, self.config.n_points, self.config.dim))
         targets = data @ batch_tasks[:,:,np.newaxis] + np.random.normal(size=(self.config.batch_size, self.config.n_points, 1)) * self.config.noise_scale
@@ -50,7 +50,3 @@ class BatchIterator(torch.utils.data.IterableDataset):
 
 if __name__ == "__main__":
     pass
-
-def oracle(batch):
-    targets = torch.matmul(batch["xs"], batch["ws"][:,:,np.newaxis])
-    return torch.squeeze(targets, axis=2)
