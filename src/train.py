@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 import wandb
+import argparse
 
 from model import GPT2
 from collect_data import LinRegData
@@ -13,7 +14,16 @@ if __name__ == "__main__":
     wandb.login()
     config = Config()
 
-    train_data = LinRegData(config)
+    parser = argparse.ArgumentParser(description='Train')
+    parser.add_argument('--resume_train', help='Boolean.', action='store_true')
+    args = parser.parse_args()
+    resume_train = args.resume_train
+    
+    if resume_train:
+        train_data = LinRegData(config, task_pool=torch.load(config.task_pool_path))
+    else:
+        train_data = LinRegData(config)
+
     train_loader = train_data.batch_iterator()
     checkpoint_callback = ModelCheckpoint(every_n_train_steps=config.checkpoint_interval, save_top_k=-1)
     wandb_logger = WandbLogger(
@@ -32,14 +42,18 @@ if __name__ == "__main__":
 
     model = GPT2(n_dims_in=config.dim + 1, n_positions=config.n_points, n_dims_out=1)
     config_dict = {key:value for key, value in Config.__dict__.items() if not key.startswith('__') and not callable(key)}
-    run = wandb.init(
-        # Set the project where this run will be logged
-        project="Data Diversity Reproduction",
-        # Track hyperparameters and run metadata
-        config=config_dict,
-    )
 
-    task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
-    torch.save(train_data.task_pool, task_pool_path)
+    if resume_train:
+        trainer.fit(model=model, train_dataloaders=train_loader, ckpt_path=config.ckpt_path)
+    else:
+        run = wandb.init(
+            # Set the project where this run will be logged
+            project="Data Diversity Reproduction",
+            # Track hyperparameters and run metadata
+            config=config_dict,
+        )
 
-    trainer.fit(model=model, train_dataloaders=train_loader)
+        task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
+        torch.save(train_data.task_pool, task_pool_path)
+
+        trainer.fit(model=model, train_dataloaders=train_loader)
