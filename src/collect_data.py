@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-from config import Config
 import utils as u
 
 class LinRegData:
@@ -14,13 +13,13 @@ class LinRegData:
             self.generate_task_pool()
 
     def generate_task_pool(self):
-        self.task_pool = np.random.normal(size=(self.config.n_tasks, self.config.dim))
+        self.task_pool = np.random.normal(size=(self.config['n_tasks'], self.config['dim']))
 
     def generate_batch(self):
-        batch_task_idx = np.random.randint(self.task_pool.shape[0], size=(self.config.batch_size))
+        batch_task_idx = np.random.randint(self.task_pool.shape[0], size=(self.config['batch_size']))
         batch_tasks = self.task_pool[batch_task_idx,:]
-        data = np.random.normal(size=(self.config.batch_size, self.config.n_points, self.config.dim))
-        targets = data @ batch_tasks[:,:,np.newaxis] + np.random.normal(size=(self.config.batch_size, self.config.n_points, 1)) * self.config.noise_scale
+        data = np.random.normal(size=(self.config['batch_size'], self.config['n_points'], self.config['dim']))
+        targets = data @ batch_tasks[:,:,np.newaxis] + np.random.normal(size=(self.config['batch_size'], self.config['n_points'], 1)) * self.config['noise_scale']
         targets = np.squeeze(targets, axis=2)
 
         xs = torch.from_numpy(data).float()
@@ -35,7 +34,7 @@ class LinRegData:
             yield self.generate_batch()
 
     def batch_iterator(self):
-        return BatchIterator(generator=self.batch_generator(self.config.train_steps), length=self.config.train_steps)
+        return BatchIterator(generator=self.batch_generator(self.config['train_steps']), length=self.config['train_steps'])
 
 class BatchIterator(torch.utils.data.IterableDataset):
     def __init__(self, generator, length=None):

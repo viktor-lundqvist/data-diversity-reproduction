@@ -1,0 +1,15 @@
+n_tasks: 65536
+n_validation_batches: 2
+train_steps: 524288
+checkpoint_interval: 65536
+batch_size: 256
+learning_rate: 1.0e-3
+weight_decay: 0
+n_points: 16
+dim: 8
+noise_scale: 0.5
+
+# Only needed if run with --resume_train:
+ckpt_path: /home/jovyan/data-diversity-reproduction/Data Diversity Reproduction/1niff3ao/checkpoints/epoch=0-step=250.ckpt
+task_pool_path: /home/jovyan/data-diversity-reproduction/outputs/1niff3ao_task_pool.pt
+#########################################

@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import os
 
 def to_seq(xs, ys):
     data, targets = xs, ys
@@ -12,3 +13,9 @@ def to_seq(xs, ys):
 
 def seq_to_targets(seq):
     return seq[:, ::2, 0]
+
+def file_path(path):
+    if os.path.isfile(path) and path.split('.')[-1] == 'yaml':
+        return path
+    else:
+        raise FileNotFoundError(path)

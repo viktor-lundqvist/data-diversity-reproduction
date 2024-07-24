@@ -3,14 +3,11 @@ import torch.nn as nn
 from transformers import GPT2Model, GPT2Config
 import pytorch_lightning as pl
 
-from config import Config
 import utils as u
 from collect_data import LinRegData
 
-config = Config()
-
 class GPT2(pl.LightningModule):
-    def __init__(self, n_dims_in, n_positions, n_embd=128, n_layer=8, n_head=2, n_dims_out=1):
+    def __init__(self, n_dims_in, n_positions, config, n_embd=128, n_layer=8, n_head=2, n_dims_out=1):
         super(GPT2, self).__init__()
         configuration = GPT2Config(
             n_positions=2048,  # set to sthg large advised
@@ -23,9 +20,11 @@ class GPT2(pl.LightningModule):
             use_cache=False,
         )
         self.name = f"gpt2_embd={n_embd}_layer={n_layer}_head={n_head}"
+        self.learning_rate = config['learning_rate']
+        self.weight_decay = config['weight_decay']
 
-        self.n_positions = n_positions
-        self.n_dims_in = n_dims_in
+        self.n_positions = n_positions # Don't know what this is doing
+        self.n_dims_in = n_dims_in # Should perhaps just go through config
         self.n_dims_out = n_dims_out
         self._read_in = nn.Linear(n_dims_in, n_embd)
         self._backbone = GPT2Model(configuration)
@@ -58,8 +57,8 @@ class GPT2(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        optimizer = torch.optim.AdamW(self.parameters(), lr=config.learning_rate,
-                                    weight_decay=config.weight_decay)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate,
+                                    weight_decay=self.weight_decay)
         return optimizer
 
 if __name__ == "__main__":

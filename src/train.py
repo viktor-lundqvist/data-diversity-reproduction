@@ -5,27 +5,30 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 import wandb
 import argparse
+import yaml
 
+import utils as u
 from model import GPT2
 from collect_data import LinRegData
-from config import Config
 
 if __name__ == "__main__":
     wandb.login()
-    config = Config()
 
     parser = argparse.ArgumentParser(description='Train')
     parser.add_argument('--resume_train', help='Boolean.', action='store_true')
+    parser.add_argument('--config', type=u.file_path, required=True)
     args = parser.parse_args()
     resume_train = args.resume_train
-    
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+
     if resume_train:
-        train_data = LinRegData(config, task_pool=torch.load(config.task_pool_path))
+        train_data = LinRegData(config, task_pool=torch.load(config['task_pool_path']))
     else:
         train_data = LinRegData(config)
 
     train_loader = train_data.batch_iterator()
-    checkpoint_callback = ModelCheckpoint(every_n_train_steps=config.checkpoint_interval, save_top_k=-1)
+    checkpoint_callback = ModelCheckpoint(every_n_train_steps=config['checkpoint_interval'], save_top_k=-1)
     wandb_logger = WandbLogger(
         log_model="all",
         project="Data Diversity Reproduction"
@@ -33,24 +36,23 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(
         max_epochs=1,
-        max_steps=config.train_steps,
+        max_steps=config['train_steps'],
         accelerator="gpu",
         devices="auto",
         callbacks=[checkpoint_callback],
         logger=wandb_logger
     )
 
-    model = GPT2(n_dims_in=config.dim + 1, n_positions=config.n_points, n_dims_out=1)
-    config_dict = {key:value for key, value in Config.__dict__.items() if not key.startswith('__') and not callable(key)}
+    model = GPT2(n_dims_in=config['dim'] + 1, n_positions=config['n_points'], config=config, n_dims_out=1)
 
     if resume_train:
-        trainer.fit(model=model, train_dataloaders=train_loader, ckpt_path=config.ckpt_path)
+        trainer.fit(model=model, train_dataloaders=train_loader, ckpt_path=config['ckpt_path'])
     else:
         run = wandb.init(
             # Set the project where this run will be logged
             project="Data Diversity Reproduction",
             # Track hyperparameters and run metadata
-            config=config_dict,
+            config=config,
         )
 
         task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
