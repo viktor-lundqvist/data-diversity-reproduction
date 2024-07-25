@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 import wandb
 import argparse
@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     train_loader = train_data.batch_iterator()
     checkpoint_callback = ModelCheckpoint(every_n_train_steps=config['checkpoint_interval'], save_top_k=-1)
+    lr_monitor = LearningRateMonitor(logging_interval='step')
     wandb_logger = WandbLogger(
         log_model="all",
         project="Data Diversity Reproduction"
@@ -42,7 +43,7 @@ if __name__ == "__main__":
         max_steps=config['train_steps'],
         accelerator="gpu",
         devices="auto",
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, lr_monitor],
         logger=wandb_logger
     )
 

@@ -4,20 +4,25 @@ import torch
 import utils as u
 
 class LinRegData:
-    def __init__(self, config, task_pool=None):
+    def __init__(self, config, task_pool=None, no_pool=False):
         self.config = config
-        self.train_data = []
+        self.no_pool = no_pool
+
         if task_pool is not None:
             self.task_pool = task_pool
-        else:
+        elif not no_pool:
             self.generate_task_pool()
 
     def generate_task_pool(self):
         self.task_pool = np.random.normal(size=(self.config['n_tasks'], self.config['dim']))
 
     def generate_batch(self):
-        batch_task_idx = np.random.randint(self.task_pool.shape[0], size=(self.config['batch_size']))
-        batch_tasks = self.task_pool[batch_task_idx,:]
+        if self.no_pool:
+            batch_tasks = np.random.normal(size=(self.config['batch_size'], self.config['dim']))
+        else:
+            batch_task_idx = np.random.randint(self.task_pool.shape[0], size=(self.config['batch_size']))
+            batch_tasks = self.task_pool[batch_task_idx,:]
+
         data = np.random.normal(size=(self.config['batch_size'], self.config['n_points'], self.config['dim']))
         targets = data @ batch_tasks[:,:,np.newaxis] + np.random.normal(size=(self.config['batch_size'], self.config['n_points'], 1)) * self.config['noise_scale']
         targets = np.squeeze(targets, axis=2)

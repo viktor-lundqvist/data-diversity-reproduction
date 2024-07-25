@@ -22,6 +22,7 @@ class GPT2(pl.LightningModule):
         self.name = f"gpt2_embd={n_embd}_layer={n_layer}_head={n_head}"
         self.learning_rate = config['learning_rate']
         self.weight_decay = config['weight_decay']
+        self.train_steps = config['train_steps']
 
         self.n_positions = n_positions # Don't know what this is doing
         self.n_dims_in = n_dims_in # Should perhaps just go through config
@@ -59,7 +60,20 @@ class GPT2(pl.LightningModule):
 
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate,
                                     weight_decay=self.weight_decay)
-        return optimizer
+
+        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer,
+            max_lr=self.learning_rate,
+            steps_per_epoch=self.train_steps,
+            epochs=1,
+            cycle_momentum=False,
+            pct_start=0.5,
+            anneal_strategy='linear',
+            div_factor=1e5,
+            final_div_factor=1
+        )
+
+        return [optimizer], [{'scheduler': lr_scheduler, 'interval': 'step'}]
 
 if __name__ == "__main__":
     pass
