@@ -6,6 +6,9 @@ from pytorch_lightning.loggers import WandbLogger
 import wandb
 import argparse
 import yaml
+import hashlib
+import time
+import os
 
 import utils as u
 from model import GPT2
@@ -55,7 +58,13 @@ if __name__ == "__main__":
             config=config,
         )
 
-        task_pool_path = "./outputs/" + run.path.split("/")[-1] + "_task_pool.pt"
+        # Create the directory before wandb does, and fill with config and taskpool. Also save taskpool to wandb.
+        run_dir = f"./Data Diversity Reproduction/{run.id}"
+        os.mkdir(run_dir)
+        task_pool_path = f"{run_dir}/task_pool.pt"
         torch.save(train_data.task_pool, task_pool_path)
+        wandb.save(task_pool_path)
+        with open(f"{run_dir}/config.yaml", "w") as f:
+            yaml.dump(config, f, default_flow_style=False)
 
         trainer.fit(model=model, train_dataloaders=train_loader)
